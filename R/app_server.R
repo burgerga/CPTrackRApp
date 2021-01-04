@@ -1,0 +1,13 @@
+#' The application server-side
+#' 
+#' @param input,output,session Internal parameters for {shiny}. 
+#'     DO NOT REMOVE.
+#' @import shiny
+#' @noRd
+app_server <- function( input, output, session ) {
+ sqlpool <- mod_sqlite_file_server("sqlfile")
+ output$tbl <- renderTable({
+   req(sqlpool())
+   RSQLite::dbReadTable(sqlpool(), "Experiment_Properties")
+ })
+}
