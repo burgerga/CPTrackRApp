@@ -20,6 +20,14 @@ usethis::use_package( "celltrackR" )
 usethis::use_package( "DBI" )
 usethis::use_package( "RSQLite" )
 usethis::use_package( "pool" )
+usethis::use_package( "stringr" )
+usethis::use_package( "stringi" )
+usethis::use_package( "magrittr" )
+usethis::use_package( "dplyr" )
+usethis::use_package( "dbplyr" )
+usethis::use_package( "purrr" )
+usethis::use_package( "tibble" )
+usethis::use_package( "ggplot2" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/
