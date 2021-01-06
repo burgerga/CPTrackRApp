@@ -28,6 +28,7 @@ usethis::use_package( "dbplyr" )
 usethis::use_package( "purrr" )
 usethis::use_package( "tibble" )
 usethis::use_package( "ggplot2" )
+usethis::use_package( "DT" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/

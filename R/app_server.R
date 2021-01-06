@@ -3,7 +3,6 @@
 #' @param input,output,session Internal parameters for {shiny}. 
 #'     DO NOT REMOVE.
 #' @import shiny
-#' @import ggplot2
 #' @noRd
 app_server <- function( input, output, session ) {
  sqlpool <- mod_sqlite_file_server("sqlfile")
@@ -11,6 +10,42 @@ app_server <- function( input, output, session ) {
   # req(sqlpool())
    #RSQLite::dbReadTable(sqlpool(), "Experiment_Properties")
  #})
+ 
+ sqltables <- reactive({
+   req(sqlpool())
+   DBI::dbListTables(sqlpool())
+ })
+ 
+    
+ observe({
+    x <- sqltables()
+    updateSelectInput(session, "tables",
+                      label = "Select table",
+                      choices = x,
+                      selected = head(x, 1)
+    )
+ })
+ 
+ sqltable_data <- reactive({
+   req(input$tables)
+   sqlpool() %>% tbl(input$tables) %>% collect()
+ })
+ 
+ observeEvent(input$tables, {
+   req(input$tables)
+   output$content <- DT::renderDataTable(sqltable_data(),
+                                         options = list(scrollX = TRUE))
+ })
+ 
+ output$downloadData <- downloadHandler(
+    filename = function() {
+       paste0(input$tables, ".csv")
+    },
+    content = function(file) {
+       write.csv(sqltable_data(), file)
+    },
+    contentType = "text/csv"
+ )
  
  pipeline <- reactive({
    req(sqlpool())
@@ -32,12 +67,13 @@ app_server <- function( input, output, session ) {
  
  output$trackplot <- renderPlot({
     plot_data <- object_data() %>% left_join(lut())
-    ggplot(plot_data, aes(Nuclei_Location_Center_X, Nuclei_Location_Center_Y, 
+    p <- ggplot(plot_data, aes(Nuclei_Location_Center_X, Nuclei_Location_Center_Y, 
                           group = uid, color = as.factor(uid))) + 
        geom_path() + 
        guides(color = F) +
        coord_fixed() + 
       theme_bw(base_size = 15)
+    p
  })
  
  output$pipeline <- renderText(pipeline())

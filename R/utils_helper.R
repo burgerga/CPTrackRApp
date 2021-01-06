@@ -1,4 +1,5 @@
 #' @import dplyr
+#' @import ggplot2
 #' @importFrom purrr pluck
 NULL
 

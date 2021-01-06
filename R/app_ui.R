@@ -17,6 +17,12 @@ app_ui <- function(request) {
          width = 3),  
         mainPanel(
           tabsetPanel(type = "tabs",
+                      tabPanel("SQLite Explorer", 
+                               selectInput('tables', "Choose table", c()),
+                               conditionalPanel(condition="input.tables!=''",
+                                                downloadButton('downloadData', 'Download')),
+                               DT::dataTableOutput("content", width = )
+                      ),
                       tabPanel("Tracking Preview",
                                plotOutput("trackplot", height = "80vh")
                                ),
