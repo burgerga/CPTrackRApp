@@ -1,3 +1,5 @@
+sqlite_exts <- c('db', 'sqlite', 'sqlite3') 
+
 #' sqlite_file UI Function
 #'
 #' @description A shiny Module.
@@ -36,11 +38,8 @@ mod_sqlite_file_server <- function(id) {
       observeEvent(input$file, {
         file <- input$file
         validate(
-          need(tools::file_ext(file$name) %in% c(
-            'db',
-            'sqlite',
-            'sqlite3'
-          ), "Wrong File Format try again!"))
+          need(tools::file_ext(file$name) %in% sqlite_exts, 
+               "Wrong File Format try again!"))
        
         pool(close_pool(pool()))
         pool(pool::dbPool(

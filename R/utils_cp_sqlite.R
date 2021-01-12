@@ -39,7 +39,7 @@ get_experiment_properties <- function(pool, fields = NULL, experiments = NULL) {
   res
 }
 
-get_cp_info_table <- function(pool, experiment) {
+get_cp_info_table <- function(pool, experiment = get_last_experiment(pool)) {
   table_prefix <- get_experiment_properties(pool, "class_table", experiment) %>% pull(value)
   pool %>% tbl(f("{table_prefix}Per_Experiment"))
 }
@@ -52,6 +52,21 @@ get_cp_pipeline <- function(pool, experiment = get_last_experiment(pool)) {
     rawToChar() %>%
     stringi::stri_unescape_unicode() %>%
     paste(collapse = "\n")
+}
+
+get_cp_version <- function(pool, experiment = get_last_experiment(pool)) {
+  sql_cp_version <- get_cp_info_table(pool, experiment) %>% pull(CellProfiler_Version)
+  res <- cp_version_lut %>% semi_join(tibble(sqlite = sql_cp_version), by = "sqlite")
+  if(nrow(res) == 0) {return(sql_cp_version)}
+  return(res$version)
+}
+
+get_cp_time <- function(pool, experiment = get_last_experiment(pool)) {
+   get_cp_info_table(pool, experiment) %>% 
+    pull(Run_Timestamp) %>%
+    as.POSIXct(tz = "", "%Y-%m-%dT%H:%M:%OS") %>% 
+    format("%Y-%m-%d %H:%M:%S")
+
 }
 
 get_image_table <- function(pool, experiment = get_last_experiment(pool)) {
@@ -90,11 +105,6 @@ get_tracked_objects <- function(pool, experiment = get_last_experiment(pool)) {
 has_tracking <- function(pool, experiment = get_last_experiment(pool)) {
   length(get_tracked_objects(pool, experiment)) > 0
 } 
-
-
-get_object_col <- function(pool, object, experiment = get_last_experiment(pool)) {
-  
-}
 
 get_object_col <- function(pool, object, experiment = get_last_experiment(pool)) {
   obj_col <- get_object_table(pool, experiment) %>%
@@ -156,3 +166,31 @@ create_tracking_lut <- function(pool, experiment = get_last_experiment(pool), gr
     left_join(lut, by = c(group_id_col, timepoint_id_col))
   
 }
+
+get_unique_group_metadata <- function(pool, experiment = get_last_experiment(pool)) {
+  group_id_col <- get_experiment_properties(pool, "group_id", experiment) %>% pull(value)
+  get_image_table(pool, experiment) %>%
+    select(all_of(group_id_col), starts_with("Image_Metadata")) %>% 
+    collect() %>% 
+    pivot_longer(-all_of(group_id_col)) %>% 
+    group_by(across(c(all_of(group_id_col), name))) %>% 
+    filter(n_distinct(value) == 1) %>% # keep only metadata that is same over the group (so not unique to the frame)
+    unique() %>% 
+    group_by(name) %>% 
+    filter(!all(value == 0)) %>% # keep only metadata that is not 0 for all groups (likely means that it's missing)
+    pivot_wider()
+}
+
+get_sql_group_metadata_col <- function(pool, experiment = get_last_experiment(pool)) {
+  group_id_col <- get_experiment_properties(pool, "group_id", experiment) %>% pull(value)
+  grouping_tags <- get_cp_info_table(pool, experiment) %>%
+    pull(Metadata_GroupingTags) %>%
+    jsonlite::fromJSON() %>%
+    f("Image", ., .sep = "_")
+  get_image_table(pool, experiment) %>%
+    select(all_of(group_id_col), all_of(grouping_tags)) %>%
+    collect() %>%
+    unique()
+}
+
+

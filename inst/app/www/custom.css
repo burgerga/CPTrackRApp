@@ -1,0 +1,34 @@
+#toprow {
+  display: flex;
+  padding: 15px 0 15px 0;
+}
+
+#toprow > div {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+#topright {
+  justify-content: flex-end;
+}
+
+#topmid {
+  justify-content: center;
+}
+
+#toprow .shiny-input-container {
+  margin: 0;
+}
+
+.shiny-file-input-progress {
+  margin-bottom: 0;
+}
+
+#exp_info .shiny-table {
+  margin-bottom: 0;
+}
+
+#exp_info td {
+  border-top-style: none;
+}

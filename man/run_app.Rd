@@ -7,6 +7,9 @@
 run_app(shiny.maxRequestSize = 1024 * 1024^2, ...)
 }
 \arguments{
+\item{shiny.maxRequestSize}{This is a number which specifies the maximum web request size, which 
+serves as a size limit for file uploads. If unset, the maximum request size defaults to 1024 MiB.}
+
 \item{...}{A series of options to be used inside the app.}
 }
 \description{

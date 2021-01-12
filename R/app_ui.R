@@ -10,27 +10,33 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # List the first level UI elements here 
     fluidPage(
-      h1("CPTrackR App"),
-      sidebarLayout(
-        sidebarPanel(
-         mod_sqlite_file_ui("sqlfile", "Choose sqlite file"),
-         width = 3),  
-        mainPanel(
-          tabsetPanel(type = "tabs",
-                      tabPanel("SQLite Explorer", 
-                               selectInput('tables', "Choose table", c()),
-                               conditionalPanel(condition="input.tables!=''",
-                                                downloadButton('downloadData', 'Download')),
-                               DT::dataTableOutput("content", width = )
-                      ),
-                      tabPanel("Tracking Preview",
-                               plotOutput("trackplot", height = "80vh")
-                               ),
-                      tabPanel("Pipeline",
-                               verbatimTextOutput("pipeline"),
-                               tags$head(tags$style("#pipeline{overflow-y:scroll; max-height: 80vh;}")))
-          )
-        )
+      div(id = "toprow",
+        div(id = "topleft", div(titlePanel("CPTrackR App"))),
+        div(id = "topmid", div(mod_sqlite_file_ui("sqlfile", "Choose sqlite file"))),
+        div(id = "topright", tableOutput("exp_info"))
+      ),
+      tabsetPanel(type = "tabs",
+                  tabPanel("SQLite Explorer", 
+                           selectInput('tables', "Choose table", c()),
+                           DT::dataTableOutput("content"),
+                           conditionalPanel(condition="input.tables!=''",
+                                            downloadButton('downloadData', 'Download'))
+                  ),
+                  tabPanel("Tracking",
+                           sidebarLayout(
+                             sidebarPanel(
+                               selectInput('group_input', "Choose group", c()),
+                               downloadButton('dl_fixed_tracks', 'Download all fixed tracks')
+                             ),
+                             mainPanel(
+                               plotOutput("trackplot", height = "80vh") %>% 
+                                 shinycssloaders::withSpinner()
+                             )
+                           )
+                           ),
+                  tabPanel("Pipeline",
+                           verbatimTextOutput("pipeline"),
+                           tags$head(tags$style("#pipeline{overflow-y:scroll; max-height: 80vh;}")))
       )
     )
   )

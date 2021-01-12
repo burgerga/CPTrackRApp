@@ -22,7 +22,7 @@ app_server <- function( input, output, session ) {
     updateSelectInput(session, "tables",
                       label = "Select table",
                       choices = x,
-                      selected = head(x, 1)
+                      selected = utils::head(x, 1)
     )
  })
  
@@ -42,7 +42,7 @@ app_server <- function( input, output, session ) {
        paste0(input$tables, ".csv")
     },
     content = function(file) {
-       write.csv(sqltable_data(), file)
+       utils::write.csv(sqltable_data(), file)
     },
     contentType = "text/csv"
  )
@@ -54,14 +54,14 @@ app_server <- function( input, output, session ) {
  
  lut <- reactive({
    req(sqlpool())
-   create_tracking_lut(sqlpool(), groups = 1) 
+   create_tracking_lut(sqlpool(), groups = sel_group()) 
  })
  
  object_data <- reactive({
     req(sqlpool())
     group_id_col <- get_experiment_properties(sqlpool(), "group_id") %>% pull(value)
     get_object_data_with_groups(sqlpool()) %>%
-       filter(.data[[group_id_col]] == 1) %>%
+       filter(.data[[group_id_col]] == !!sel_group()) %>%
        collect()
  })
  
@@ -77,5 +77,59 @@ app_server <- function( input, output, session ) {
  })
  
  output$pipeline <- renderText(pipeline())
+ 
+ output$exp_info <- renderTable({
+   req(sqlpool())
+   
+   tibble::tribble(
+   ~key, ~value,
+   "CellProfiler", get_cp_version(sqlpool()),
+   "Run Timestamp", get_cp_time(sqlpool()) 
+ )}, colnames = F)
+ 
+ cp_groups <- reactive({
+    req(sqlpool())
+    get_sql_group_metadata_col(sqlpool()) %>%
+       mutate(choice = paste(.[[1]], .[[2]], sep = ": "))
+ })
+ 
+ observe({
+    x <- cp_groups()$choice
+    updateSelectInput(session, "group_input",
+                      label = "Select group",
+                      choices = x,
+                      selected = utils::head(x, 1)
+    )
+ })
+ 
+ sel_group <- reactive({
+    req(input$group_input)
+    cp_groups() %>% filter(choice == input$group_input) %>% pull(1)
+ })
+ 
+ fixed_tracking_data <- reactive({
+   
+ })
+ 
+ output$dl_fixed_tracks <- downloadHandler(
+    filename = function() {
+       paste0("fixed_tracks", ".csv")
+    },
+    content = function(file) {
+      req(sqlpool())
+      withProgress(message = 'Preparing download', value = 0, {
+        parts <- 4
+        incProgress(1/parts, detail = "Collecting object data")
+        data <- get_object_data_with_groups(sqlpool()) %>% collect()
+        incProgress(2/parts, detail = "Creating lookup table")
+        lut <- create_tracking_lut(sqlpool())
+        incProgress(3/parts, detail = "Joining data")
+        fixed <- data %>% left_join(lut)
+        incProgress(4/parts, detail = "Writing data")
+        utils::write.csv(fixed, file)
+      })
+    },
+    contentType = "text/csv"
+ )
  
 }
