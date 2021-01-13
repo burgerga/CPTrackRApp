@@ -31,6 +31,7 @@ usethis::use_package( "ggplot2" )
 usethis::use_package( "DT" )
 usethis::use_package( "shinycssloaders" )
 usethis::use_package( "jsonlite" )
+usethis::use_package( "progressr" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/

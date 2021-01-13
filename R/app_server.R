@@ -122,7 +122,9 @@ app_server <- function( input, output, session ) {
         incProgress(1/parts, detail = "Collecting object data")
         data <- get_object_data_with_groups(sqlpool()) %>% collect()
         incProgress(2/parts, detail = "Creating lookup table")
-        lut <- create_tracking_lut(sqlpool())
+        progressr::withProgressShiny(message = "Creating LUT", value = 0, {
+          lut <- create_tracking_lut(sqlpool())
+        })
         incProgress(3/parts, detail = "Joining data")
         fixed <- data %>% left_join(lut)
         incProgress(4/parts, detail = "Writing data")
