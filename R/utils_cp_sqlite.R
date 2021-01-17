@@ -4,20 +4,17 @@ NULL
 cp_version_lut <- 
   tibble::tribble(
     ~sqlite, ~version, ~version_string,
+    "2014-07-23T17:45:00 6c2d896", "2.1.1", "2.1.1 (6c2d896)",
     "2016-05-03T18:31:00 ac0529e", "2.2.0", "2.2.0 (ac0529e)",
     "4.0.5", "4.0.5", "4.0.5"
   )
 
 # quick and dirty for rapid development
-get_sqlite_pool <- function(path = "~/../../stack/00_dump/h5cp_sqlite/test.db" 
-                       ) {
+get_sqlite_pool <- function(path) {
   pool::dbPool(
     drv = RSQLite::SQLite(),
     dbname = path
   )
-}
-get_sqlite_alt_pool <- function() {
-  get_sqlite_pool(path = "~/../../DefaultDB.db")
 }
 
 get_experiments <- function(pool) {
@@ -39,8 +36,21 @@ get_experiment_properties <- function(pool, fields = NULL, experiments = NULL) {
   res
 }
 
-get_cp_info_table <- function(pool, experiment = get_last_experiment(pool)) {
+get_table_prefix <- function(pool, experiment = get_last_experiment(pool)) {
   table_prefix <- get_experiment_properties(pool, "class_table", experiment) %>% pull(value)
+  if(table_prefix != "") return(table_prefix)
+  # determine if no prefix or missing prefix (e.g. in CP 2.1.1)
+  tables <- DBI::dbListTables(pool)
+  if("Per_Experiment" %in% tables) return("")
+  # else, find Per_Experiment table and return prefix
+  tables %>% 
+    Filter(function(x) {str_detect(x, "Per_Experiment$")}, .) %>% 
+    stringr::str_replace("Per_Experiment", "")
+
+}
+
+get_cp_info_table <- function(pool, experiment = get_last_experiment(pool)) {
+  table_prefix <- get_table_prefix(pool, experiment)
   pool %>% tbl(f("{table_prefix}Per_Experiment"))
 }
 
