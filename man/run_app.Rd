@@ -4,7 +4,7 @@
 \alias{run_app}
 \title{Run the Shiny Application}
 \usage{
-run_app(shiny.maxRequestSize = 1024 * 1024^2, ...)
+run_app(shiny.maxRequestSize = 5 * 1024^3, ...)
 }
 \arguments{
 \item{shiny.maxRequestSize}{This is a number which specifies the maximum web request size, which 

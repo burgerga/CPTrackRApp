@@ -5,7 +5,7 @@
 #' serves as a size limit for file uploads. If unset, the maximum request size defaults to 1024 MiB.
 #'
 #' @export
-run_app <- function(shiny.maxRequestSize = 1024*1024^2,
+run_app <- function(shiny.maxRequestSize = 5*1024^3,
   ...
 ) {
   options(shiny.maxRequestSize = shiny.maxRequestSize)
