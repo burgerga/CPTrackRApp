@@ -29,7 +29,8 @@ Imports:
     ggplot2,
     shinycssloaders,
     jsonlite,
-    progressr
+    progressr,
+    mdftracks
 Remotes: burgerga/CPTrackR
 Encoding: UTF-8
 LazyData: true

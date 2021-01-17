@@ -65,9 +65,22 @@ app_server <- function( input, output, session ) {
        collect()
  })
  
+ plot_data <- reactive({
+   req(sqlpool())
+   tracked_object <- get_tracked_objects(sqlpool())[1]
+   time_col <- get_experiment_properties(sqlpool(), "timepoint_id", get_last_experiment(sqlpool())) %>% pull(value)
+    object_data() %>% 
+      left_join(lut()) %>%
+      select(uid, 
+             time = all_of(time_col),
+             x = all_of(paste0(tracked_object, "_Location_Center_X")),
+             y = all_of(paste0(tracked_object, "_Location_Center_Y")),
+             alt_uid)
+      
+ })
+ 
  output$trackplot <- renderPlot({
-    plot_data <- object_data() %>% left_join(lut())
-    p <- ggplot(plot_data, aes(Nuclei_Location_Center_X, Nuclei_Location_Center_Y, 
+    p <- ggplot(plot_data(), aes(x, y, 
                           group = uid, color = as.factor(uid))) + 
        geom_path() + 
        guides(color = F) +
@@ -107,16 +120,12 @@ app_server <- function( input, output, session ) {
     cp_groups() %>% filter(choice == input$group_input) %>% pull(1)
  })
  
- fixed_tracking_data <- reactive({
-   
- })
- 
  output$dl_fixed_tracks <- downloadHandler(
     filename = function() {
        paste0("fixed_tracks", ".csv")
     },
     content = function(file) {
-      req(sqlpool())
+      req(plot_data())
       withProgress(message = 'Preparing download', value = 0, {
         parts <- 4
         incProgress(1/parts, detail = "Collecting object data")
@@ -132,6 +141,20 @@ app_server <- function( input, output, session ) {
       })
     },
     contentType = "text/csv"
+ )
+ 
+ output$dl_mdf <- downloadHandler(
+    filename = function() {
+       paste0("group_", sel_group(), ".mdf")
+    },
+    content = function(file) {
+      req(plot_data())
+      withProgress(message = 'Preparing download', {
+        #readr::write_csv(plot_data(), file)
+        mdftracks::write.mdf(plot_data(), file, pos.columns = c(3,4))
+      })
+    },
+    contentType = "text/plain"
  )
  
 }

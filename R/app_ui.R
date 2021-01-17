@@ -29,8 +29,10 @@ app_ui <- function(request) {
                                downloadButton('dl_fixed_tracks', 'Download all fixed tracks')
                              ),
                              mainPanel(
-                               plotOutput("trackplot", height = "80vh") %>% 
-                                 shinycssloaders::withSpinner()
+                               plotOutput("trackplot", height = "70vh") %>% 
+                                 shinycssloaders::withSpinner(),
+                               conditionalPanel(condition="input.group_input!=''",
+                                                downloadButton('dl_mdf', 'Download MTrackJ Data File'))
                              )
                            )
                            ),
