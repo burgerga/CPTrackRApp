@@ -33,6 +33,7 @@ usethis::use_package( "shinycssloaders" )
 usethis::use_package( "jsonlite" )
 usethis::use_package( "progressr" )
 usethis::use_package( "mdftracks" )
+usethis::use_package( "future" )
 
 ## Add modules ----
 ## Create a module infrastructure in R/

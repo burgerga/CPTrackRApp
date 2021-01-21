@@ -30,7 +30,8 @@ Imports:
     shinycssloaders,
     jsonlite,
     progressr,
-    mdftracks
+    mdftracks,
+    future
 Remotes: burgerga/CPTrackR
 Encoding: UTF-8
 LazyData: true

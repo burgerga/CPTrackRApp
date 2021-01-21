@@ -9,6 +9,7 @@ run_app <- function(shiny.maxRequestSize = 5*1024^3,
   ...
 ) {
   options(shiny.maxRequestSize = shiny.maxRequestSize)
+  future::plan(future::multisession(workers = 4))
   golem::with_golem_options(
     app = shiny::shinyApp(
       ui = app_ui, 
