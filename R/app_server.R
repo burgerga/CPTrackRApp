@@ -59,7 +59,7 @@ app_server <- function( input, output, session ) {
  
  object_data <- reactive({
     req(sqlpool())
-    group_id_col <- get_experiment_properties(sqlpool(), "group_id") %>% pull(value)
+    group_id_col <- get_cp_group_id(sqlpool())
     get_object_data_with_groups(sqlpool()) %>%
        filter(.data[[group_id_col]] == !!sel_group()) %>%
        collect()
@@ -68,7 +68,7 @@ app_server <- function( input, output, session ) {
  plot_data <- reactive({
    req(sqlpool())
    tracked_object <- get_tracked_objects(sqlpool())[1]
-   time_col <- get_experiment_properties(sqlpool(), "timepoint_id", get_last_experiment(sqlpool())) %>% pull(value)
+   time_col <- get_cp_timepoint_id(sqlpool())
     object_data() %>% 
       left_join(lut()) %>%
       select(uid, 

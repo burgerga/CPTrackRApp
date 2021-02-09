@@ -44,9 +44,21 @@ get_table_prefix <- function(pool, experiment = get_last_experiment(pool)) {
   if("Per_Experiment" %in% tables) return("")
   # else, find Per_Experiment table and return prefix
   tables %>% 
-    Filter(function(x) {str_detect(x, "Per_Experiment$")}, .) %>% 
+    Filter(function(x) {stringr::str_detect(x, "Per_Experiment$")}, .) %>% 
     stringr::str_replace("Per_Experiment", "")
 
+}
+
+get_cp_group_id <- function(pool, experiment = get_last_experiment(pool)) {
+  group_id_col <- get_experiment_properties(pool, "group_id", experiment) %>% pull(value)
+  if(!rlang::is_empty(group_id_col)) return(group_id_col)
+  return("Image_Group_Number")
+}
+
+get_cp_timepoint_id <- function(pool, experiment = get_last_experiment(pool)) {
+  timepoint_id_col <- get_experiment_properties(pool, "timepoint_id", experiment) %>% pull(value)
+  if(!rlang::is_empty(timepoint_id_col)) return(timepoint_id_col)
+  return("Image_Group_Index")
 }
 
 get_cp_info_table <- function(pool, experiment = get_last_experiment(pool)) {
@@ -91,9 +103,11 @@ get_object_table <- function(pool, experiment = get_last_experiment(pool)) {
 
 get_data_for_cptrackr <- function(pool, tracked_object, experiment = get_last_experiment(pool)) {
   image_id_col <- get_experiment_properties(pool, "image_id", experiment) %>% pull(value)
-  group_cols <- get_experiment_properties(pool, c("group_id", "timepoint_id"), experiment) %>% pull(value)
+  group_id_col <- get_cp_group_id(pool, experiment)
+  timepoint_id_col <- get_cp_timepoint_id(pool, experiment)
+  
   get_image_table(pool, experiment) %>% 
-    select(image_id_col, group_cols) %>%
+    select(image_id_col, group_id_col, timepoint_id_col) %>%
     left_join(get_object_table(pool, experiment), by = image_id_col)
 }
 
@@ -133,19 +147,20 @@ get_object_parent_col <- function(pool, object, experiment = get_last_experiment
 }
 
 get_group_data <- function(pool, experiment = get_last_experiment(pool), groups = NULL) {
-  group_id_col <- get_experiment_properties(pool, "group_id", experiment) %>% pull(value)
-  cols <- get_experiment_properties(pool, c("image_id", "group_id", "timepoint_id"), experiment) %>% 
-    pull(value)
+  image_id_col <- get_experiment_properties(pool, "image_id", experiment) %>% pull(value)
+  group_id_col <- get_cp_group_id(pool, experiment)
+  timepoint_id_col <- get_cp_timepoint_id(pool, experiment)
+
   group_data <- get_image_table(pool, experiment) %>%
-    select(all_of(cols))
+    select(all_of(c(image_id_col, group_id_col, timepoint_id_col)))
   if(!is.null(groups)) group_data <- group_data %>% filter(.data[[group_id_col]] %in% groups)
   group_data
 }
 
 get_object_data_with_groups <- function(pool, experiment = get_last_experiment(pool), groups = NULL) {
   image_id_col <- get_experiment_properties(pool, "image_id", experiment) %>% pull(value)
-  group_id_col <- get_experiment_properties(pool, "group_id", experiment) %>% pull(value)
-  timepoint_id_col <- get_experiment_properties(pool, "timepoint_id", experiment) %>% pull(value)
+  group_id_col <- get_cp_group_id(pool, experiment)
+  timepoint_id_col <- get_cp_timepoint_id(pool, experiment)
   
   get_group_data(pool, experiment, groups) %>% 
     left_join(get_object_table(pool, experiment), by = image_id_col, suffix = suffix)
@@ -157,8 +172,8 @@ create_tracking_lut <- function(pool, experiment = get_last_experiment(pool), gr
   tracked_object <- tracked_objects[1]
   
   image_id_col <- get_experiment_properties(pool, "image_id", experiment) %>% pull(value)
-  group_id_col <- get_experiment_properties(pool, "group_id", experiment) %>% pull(value)
-  timepoint_id_col <- get_experiment_properties(pool, "timepoint_id", experiment) %>% pull(value)
+  group_id_col <- get_cp_group_id(pool, experiment)
+  timepoint_id_col <- get_cp_timepoint_id(pool, experiment)
   
   object_col <- f("{tracked_object}_Number_Object_Number")
   par_object_col <- get_object_parent_col(pool, tracked_object, experiment)
@@ -178,7 +193,7 @@ create_tracking_lut <- function(pool, experiment = get_last_experiment(pool), gr
 }
 
 get_unique_group_metadata <- function(pool, experiment = get_last_experiment(pool)) {
-  group_id_col <- get_experiment_properties(pool, "group_id", experiment) %>% pull(value)
+  group_id_col <- get_cp_group_id(pool, experiment)
   get_image_table(pool, experiment) %>%
     select(all_of(group_id_col), starts_with("Image_Metadata")) %>% 
     collect() %>% 
@@ -192,7 +207,7 @@ get_unique_group_metadata <- function(pool, experiment = get_last_experiment(poo
 }
 
 get_sql_group_metadata_col <- function(pool, experiment = get_last_experiment(pool)) {
-  group_id_col <- get_experiment_properties(pool, "group_id", experiment) %>% pull(value)
+  group_id_col <- get_cp_group_id(pool, experiment)
   grouping_tags <- get_cp_info_table(pool, experiment) %>%
     pull(Metadata_GroupingTags) %>%
     jsonlite::fromJSON() %>%
