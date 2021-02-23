@@ -211,7 +211,7 @@ get_sql_group_metadata_col <- function(pool, experiment = get_last_experiment(po
   grouping_tags <- get_cp_info_table(pool, experiment) %>%
     pull(Metadata_GroupingTags) %>%
     jsonlite::fromJSON() %>%
-    f("Image", ., .sep = "_")
+    paste("Image",., sep = "_")
   get_image_table(pool, experiment) %>%
     select(all_of(group_id_col), all_of(grouping_tags)) %>%
     collect() %>%
