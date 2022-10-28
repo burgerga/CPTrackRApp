@@ -26,13 +26,15 @@ app_ui <- function(request) {
                            sidebarLayout(
                              sidebarPanel(
                                selectInput('group_input', "Choose group", c()),
-                               downloadButton('dl_fixed_tracks', 'Download all fixed tracks')
+                               downloadButton('dl_fixed_tracks', 'Download all fixed tracks'),
+                               width = 3
                              ),
                              mainPanel(
-                               plotOutput("trackplot", height = "70vh") %>% 
+                               plotOutput("trackplot", height = "75vh") %>% 
                                  shinycssloaders::withSpinner(),
                                conditionalPanel(condition="input.group_input!=''",
-                                                downloadButton('dl_mdf', 'Download MTrackJ Data File'))
+                                                downloadButton('dl_mdf', 'Download MTrackJ Data File')),
+                               width = 9
                              )
                            )
                            ),

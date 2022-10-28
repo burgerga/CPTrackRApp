@@ -83,9 +83,10 @@ app_server <- function( input, output, session ) {
     p <- ggplot(plot_data(), aes(x, y, 
                           group = uid, color = as.factor(uid))) + 
        geom_path() + 
-       guides(color = F) +
-       coord_fixed() + 
-      theme_bw(base_size = 15)
+       guides(color = "none") +
+       coord_fixed(expand = F) + 
+      theme_bw(base_size = 15) + 
+      theme(panel.grid = element_blank())
     p
  })
  
