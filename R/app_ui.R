@@ -38,6 +38,10 @@ app_ui <- function(request) {
                              )
                            )
                            ),
+                  tabPanel("Metadata",
+                           DT::dataTableOutput("group_meta"),
+                           uiOutput("downloadGrMetaBut")
+                           ),
                   tabPanel("Pipeline",
                            verbatimTextOutput("pipeline"),
                            tags$head(tags$style("#pipeline{overflow-y:scroll; max-height: 80vh;}")))

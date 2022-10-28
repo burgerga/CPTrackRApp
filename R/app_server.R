@@ -37,6 +37,29 @@ app_server <- function( input, output, session ) {
                                          options = list(scrollX = TRUE))
  })
  
+ group_meta <- reactive({
+   req(sqlpool())
+   get_unique_group_metadata(sqlpool())
+ })
+ 
+ output$group_meta <- DT::renderDataTable(group_meta(),
+                                          options = list(scrollX = TRUE))
+ 
+ output$downloadGrMetaBut <- renderUI({
+   req(group_meta())
+   downloadButton('downloadGroupMeta', 'Download')
+ })
+ 
+ output$downloadGroupMeta <- downloadHandler(
+    filename = function() {
+       paste0("metadata", ".csv")
+    },
+    content = function(file) {
+       utils::write.csv(group_meta(), file)
+    },
+    contentType = "text/csv"
+ )
+ 
  output$downloadData <- downloadHandler(
     filename = function() {
        paste0(input$tables, ".csv")

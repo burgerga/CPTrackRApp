@@ -197,7 +197,7 @@ get_unique_group_metadata <- function(pool, experiment = get_last_experiment(poo
   get_image_table(pool, experiment) %>%
     select(all_of(group_id_col), starts_with("Image_Metadata")) %>% 
     collect() %>% 
-    pivot_longer(-all_of(group_id_col)) %>% 
+    pivot_longer(-all_of(group_id_col), values_transform = as.character) %>% 
     group_by(across(c(all_of(group_id_col), name))) %>% 
     filter(n_distinct(value) == 1) %>% # keep only metadata that is same over the group (so not unique to the frame)
     unique() %>% 
