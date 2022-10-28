@@ -19,7 +19,7 @@ sql_join_suffix.default <- function(con, ...) {
 #environment(sql_join_suffix.default) <- as.environment("package:dbplyr")
 
 
-#until stringr > 1.4 is released
+#until stringr > 1.? is released
 subset_safely <- function(x, index) {
   if (length(x) < index) {
     return(NA_character_)

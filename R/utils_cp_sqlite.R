@@ -208,10 +208,14 @@ get_unique_group_metadata <- function(pool, experiment = get_last_experiment(poo
 
 get_sql_group_metadata_col <- function(pool, experiment = get_last_experiment(pool)) {
   group_id_col <- get_cp_group_id(pool, experiment)
-  grouping_tags <- get_cp_info_table(pool, experiment) %>%
-    pull(Metadata_GroupingTags) %>%
-    jsonlite::fromJSON() %>%
-    paste("Image",., sep = "_")
+  cp_info <- get_cp_info_table(pool, experiment) %>% collect()
+  grouping_tags <- NULL
+  if("Metadata_GroupingTags" %in% names(cp_info)) {
+    grouping_tags <- cp_info %>%
+      pull(Metadata_GroupingTags) %>%
+      jsonlite::fromJSON() %>%
+      paste("Image",., sep = "_")
+  }
   get_image_table(pool, experiment) %>%
     select(all_of(group_id_col), all_of(grouping_tags)) %>%
     collect() %>%
