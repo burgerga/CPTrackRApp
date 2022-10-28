@@ -3,6 +3,10 @@
 #' @importFrom purrr pluck
 NULL
 
+#' @importFrom dbplyr dbplyr_edition
+#' @export
+dbplyr_edition.myConnectionClass <- function(con) 2L
+
 #alias
 f <- stringr::str_glue 
 
