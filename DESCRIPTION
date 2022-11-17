@@ -1,6 +1,6 @@
 Package: CPTrackRApp
 Title: CPTrackR App
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: person('Gerhard', 'Burger', email = 'burger.ga@gmail.com', role = c('cre', 'aut'))
 Description: An app to explore CellProfiler tracking output.
 License: MIT + file LICENSE
@@ -31,7 +31,8 @@ Imports:
     jsonlite,
     progressr,
     mdftracks,
-    future
+    future,
+    tidyr
 Remotes: burgerga/CPTrackR
 Encoding: UTF-8
 LazyData: true

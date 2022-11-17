@@ -127,11 +127,14 @@ app_server <- function( input, output, session ) {
  cp_groups <- reactive({
     req(sqlpool())
     group_metadata_col <- get_sql_group_metadata_col(sqlpool())
-    stopifnot(ncol(group_metadata_col) %in% 1:2)
     if(ncol(group_metadata_col) == 1) {
       return(group_metadata_col %>% mutate(choice = .[[1]]))
-    } else {
+    } else if(ncol(group_metadata_col) == 2){
       return(group_metadata_col %>%  
+               mutate(choice = paste(.[[1]], .[[2]], sep = ": ")))
+    } else {
+      return(group_metadata_col %>% 
+               unite("combined", -1, sep = " - ") %>%
                mutate(choice = paste(.[[1]], .[[2]], sep = ": ")))
     }
  })
