@@ -1,3 +1,2 @@
-# CPTrackRApp 0.0.0.9000
+# CPTrackRApp (development version)
 
-* Added a `NEWS.md` file to track changes to the package.
